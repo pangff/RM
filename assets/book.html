@@ -1,0 +1,25 @@
+<html>
+<head>
+    <title>天蝎座</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0,width=device-width,user-scalable=no">
+    <script src="jquery-1.9.1.min.js"></script>
+    <link href="book.css" rel="stylesheet" type="text/css">
+    <style>
+	    span {
+	    	padding:0px;
+			margin:0px 0px 0px 0px;
+			background-color: #ffd7b6;
+		}
+    </style>
+</head>
+<body >
+<div id="content"></div>
+<script>
+    $(document).ready(function(){
+        $('#content').load('data/data.html',function(){
+        });
+    });
+</script>
+</body>
+</html>
