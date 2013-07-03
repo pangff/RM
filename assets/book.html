@@ -16,10 +16,25 @@
 <body >
 <div id="content"></div>
 <script>
+	var offset = 10;
     $(document).ready(function(){
         $('#content').load('data/data.html',function(){
+        		setTimeout(function(){
+	   		    var totalWidth = $('#content')[0].scrollWidth;// $('#content').width();
+			 	var pageWidth = document.body.clientWidth+offset;
+		   		Android.onPageLoaded(totalWidth,pageWidth);
+		  	    },80);
         });
     });
+    
+    function pageScroll(page){
+ 	   var pageWidth = document.body.clientWidth+offset;
+ 	   $('#content').scrollLeft((pageWidth)*page);
+ 		console.log('*******url'+(pageWidth)*page);
+ 	   setTimeout(function(){
+ 		   Android.screenshot();
+ 	   },2000); 
+ 	}
 </script>
 </body>
 </html>

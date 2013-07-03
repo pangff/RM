@@ -1,0 +1,1 @@
+package com.pangff.rm;import android.os.Environment;public class Constants {	public static final String ACTION_REMOVE_LOADING = "ACTION_REMOVE_LOADING";	public static final String IMAGE_PATH = Environment.getExternalStorageDirectory()+"/rm";}

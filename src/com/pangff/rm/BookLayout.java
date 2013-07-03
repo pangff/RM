@@ -2,8 +2,14 @@ package com.pangff.rm;
 
 import java.io.ByteArrayInputStream;
 
+import android.R.color;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.webkit.ConsoleMessage;
@@ -19,10 +25,17 @@ import android.widget.FrameLayout;
  */
 @SuppressLint("NewApi")
 public class BookLayout extends FrameLayout  {
+	
 	private WebView webView;
+	private LoadingView loadingView;
+	private ImageViewPager viewPager;
+	
 	private int dpWidth, dpHeight;
 	private float scale;
 	protected Context ctx;
+	private Handler handler = new Handler();
+	private int currentPage = 0;
+	private int pageCount = 0;
 	public BookLayout(Context context) {
 		super(context);
 		this.init();
@@ -54,7 +67,7 @@ public class BookLayout extends FrameLayout  {
 
 		webView.setWebChromeClient(new WebChromeClient() {
 			public boolean onConsoleMessage(ConsoleMessage message) {
-				Log.d("artbook",
+				Log.d("rm",
 						message.message() + " -- From line "
 								+ message.lineNumber() + " of "
 								+ message.sourceId());
@@ -62,9 +75,72 @@ public class BookLayout extends FrameLayout  {
 			}
 		});
 		this.addView(webView);
+		
+		
+		viewPager = new ImageViewPager(ctx);
+		viewPager.setBackgroundColor(Color.BLUE);
+		this.addView(viewPager);
+		
+		loadingView = new LoadingView(ctx);
+		
+	}
+	
+	public void removeLoading(){
+		Intent intent = new Intent(Constants.ACTION_REMOVE_LOADING);
+        Bundle bundle = new Bundle();
+        intent.putExtras(bundle);
+        this.getContext().sendBroadcast(intent);
 	}
 	
 	public void onJustScrollFinish() {
+	}
+	
+	/**
+	 * 页面加载完成
+	 * @param totalWidth
+	 * @param pageWidth
+	 */
+	public void onPageLoaded(final float totalWidth, final float pageWidth) {
+		currentPage = 0;
+		handler.post(new Runnable() {
+			@Override
+			public void run() {
+				if (totalWidth % pageWidth == 0) {
+					pageCount = (int) (totalWidth / pageWidth)-1;
+				} else {
+					pageCount = (int) (totalWidth / pageWidth);
+				}
+				if(!ArtBookUtils.hasLoading("rm")){
+					BookLayout.this.addView(loadingView);
+					webView.loadUrl("javascript:pageScroll(" + currentPage + ")");
+				}else{
+					viewPager.initViewPager(ctx, Constants.IMAGE_PATH);
+				}
+			}
+		});
+	}
+	
+	/**
+	 * 初始化webview截屏
+	 */
+	public synchronized void screenshot() {
+
+		handler.post(new Runnable() {
+			@Override
+			public void run() {
+				// loadDialog.dismiss();
+				Log.e("加载页数:", "loadings" + currentPage);
+				Bitmap bitmap = ArtBookUtils.loadBitmapFromView(webView, webView.getWidth(),webView.getHeight());
+				ArtBookUtils.saveBitmap(bitmap,"loadings_"+ currentPage );
+				currentPage++;
+				if (currentPage <= pageCount) {
+					webView.loadUrl("javascript:pageScroll(" + currentPage + ")");
+				}else{//截图完成，加载显示页面
+					removeLoading();
+					viewPager.initViewPager(ctx, Constants.IMAGE_PATH);
+				}
+			}
+		});
 	}
 
 	@Override
@@ -73,6 +149,8 @@ public class BookLayout extends FrameLayout  {
 
 		dpWidth = (int) (w / scale);
 		dpHeight = (int) (h / scale);
+		
+		
 
 		webView.setWebViewClient(new WebViewClient() {
 			@Override
@@ -90,7 +168,7 @@ public class BookLayout extends FrameLayout  {
 							+ "            height:"
 							+ (dpHeight - 20)
 							+ "px;"
-						
+						    + "            overflow: hidden;"
 							+ "        }"
 							+ "        header{\n"
 							+"font-family:adobeFont;"
@@ -108,8 +186,7 @@ public class BookLayout extends FrameLayout  {
 							+ "        }"
 							+ "        article {"
 							+ "            "
-							+ // margin: 4px 5px 4px 5px;
-							"        }"
+							+ "        }"
 							+ "        article{"
 							+"line-height:200%;"
 							+ "            -webkit-column-width:"
