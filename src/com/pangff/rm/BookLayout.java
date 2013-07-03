@@ -78,7 +78,6 @@ public class BookLayout extends FrameLayout  {
 		
 		
 		viewPager = new ImageViewPager(ctx);
-		viewPager.setBackgroundColor(Color.BLUE);
 		this.addView(viewPager);
 		
 		loadingView = new LoadingView(ctx);
